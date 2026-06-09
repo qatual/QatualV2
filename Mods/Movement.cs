@@ -128,6 +128,56 @@ namespace Qatual.Mods
             GTPlayer.Instance.jumpMultiplier = originalJumpMultiplier;
         }
 
+        private static float origHighJumpMultiplier;
+        public static void EnableHighJump() { origHighJumpMultiplier = GTPlayer.Instance.jumpMultiplier; GTPlayer.Instance.jumpMultiplier = 4f; }
+        public static void DisableHighJump() => GTPlayer.Instance.jumpMultiplier = origHighJumpMultiplier;
+        public static void LowGravity() => GorillaTagger.Instance.rigidbody.AddForce(Vector3.up * 9.81f * 0.7f);
+        public static void AntiGravity() => GorillaTagger.Instance.rigidbody.AddForce(Vector3.up * 9.81f * 1.05f);
+
+        public static void SpeedBoost()
+        {
+            Vector3 vel = GorillaTagger.Instance.rigidbody.linearVelocity;
+            if (vel.magnitude > 0.5f)
+            {
+                vel *= 1.08f;
+                if (vel.magnitude > 25f) vel = vel.normalized * 25f;
+                GorillaTagger.Instance.rigidbody.linearVelocity = vel;
+            }
+        }
+
+        public static void BhopSpeed()
+        {
+            Rigidbody rb = GorillaTagger.Instance.rigidbody;
+            if (!GTPlayer.Instance.isClimbing && rb.linearVelocity.magnitude > 0.1f)
+            {
+                Vector3 horizontal = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+                rb.AddForce(horizontal.normalized * 3f, ForceMode.Acceleration);
+            }
+        }
+
+        public static void EnableNoClip() { GorillaTagger.Instance.rigidbody.useGravity = false; GorillaTagger.Instance.rigidbody.detectCollisions = false; }
+        public static void NoClipUpdate()
+        {
+            GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
+            Vector3 forward = GorillaTagger.Instance.headCollider.transform.forward;
+            Vector3 right = GorillaTagger.Instance.headCollider.transform.right;
+            forward.Normalize(); right.Normalize();
+            Vector3 move = Vector3.zero;
+            if (Keyboard.current[Key.W].isPressed) move += forward;
+            if (Keyboard.current[Key.S].isPressed) move -= forward;
+            if (Keyboard.current[Key.A].isPressed) move -= right;
+            if (Keyboard.current[Key.D].isPressed) move += right;
+            if (Keyboard.current[Key.Space].isPressed) move += Vector3.up;
+            if (Keyboard.current[Key.LeftCtrl].isPressed) move -= Vector3.up;
+            if (move != Vector3.zero) GTPlayer.Instance.transform.position += move * Time.deltaTime * Settings.Movement.flySpeed;
+        }
+        public static void DisableNoClip() { GorillaTagger.Instance.rigidbody.useGravity = true; GorillaTagger.Instance.rigidbody.detectCollisions = true; GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero; }
+
+        private static Vector3 freezePosition;
+        public static void EnableFreeze() { freezePosition = GTPlayer.Instance.transform.position; GTPlayer.Instance.disableMovement = true; }
+        public static void FreezeUpdate() { GTPlayer.Instance.transform.position = freezePosition; GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero; }
+        public static void DisableFreeze() => GTPlayer.Instance.disableMovement = false;
+
         public static bool previousTeleportTrigger;
         public static void TeleportGun()
         {

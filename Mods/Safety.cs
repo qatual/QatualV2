@@ -45,5 +45,66 @@ namespace Qatual.Mods
                 NotifiLib.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " attempted to report you, you have been disconnected.");
             });
         }
+
+        public static float antiReportReconnectDelay;
+        public static void AntiReportReconnect()
+        {
+            AntiReport((vrrig, position) =>
+            {
+                if (!(Time.time > antiReportReconnectDelay)) return;
+                antiReportReconnectDelay = Time.time + 1f;
+                NotifiLib.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " tried to report you, reconnecting...");
+                RoomMods.Reconnect();
+            });
+        }
+
+        public static float antiReportNotifyDelay;
+        public static void AntiReportNotify()
+        {
+            AntiReport((vrrig, position) =>
+            {
+                if (!(Time.time > antiReportNotifyDelay)) return;
+                antiReportNotifyDelay = Time.time + 1f;
+                NotifiLib.SendNotification("<color=grey>[</color><color=purple>ANTI-REPORT</color><color=grey>]</color> " + GetPlayerFromVRRig(vrrig).NickName + " tried to report you.");
+            });
+        }
+
+        public static void NoFinger()
+        {
+            ControllerInputPoller.instance.leftControllerGripFloat = 0f;
+            ControllerInputPoller.instance.rightControllerGripFloat = 0f;
+            ControllerInputPoller.instance.leftControllerIndexFloat = 0f;
+            ControllerInputPoller.instance.rightControllerIndexFloat = 0f;
+            ControllerInputPoller.instance.leftControllerPrimaryButton = false;
+            ControllerInputPoller.instance.leftControllerSecondaryButton = false;
+            ControllerInputPoller.instance.rightControllerPrimaryButton = false;
+            ControllerInputPoller.instance.rightControllerSecondaryButton = false;
+            ControllerInputPoller.instance.leftControllerPrimaryButtonTouch = false;
+            ControllerInputPoller.instance.leftControllerSecondaryButtonTouch = false;
+            ControllerInputPoller.instance.rightControllerPrimaryButtonTouch = false;
+            ControllerInputPoller.instance.rightControllerSecondaryButtonTouch = false;
+        }
+
+        private static Vector3 fakePowerOffPos;
+        private static Vector3 fakePowerOffVel;
+        public static void FakePowerOff()
+        {
+            if (ControllerInputPoller.instance.leftControllerPrimaryButton)
+            {
+                if (fakePowerOffPos == Vector3.zero)
+                {
+                    fakePowerOffPos = GorillaTagger.Instance.rigidbody.transform.position;
+                    fakePowerOffVel = GorillaTagger.Instance.rigidbody.linearVelocity;
+                }
+                VRRig.LocalRig.enabled = false;
+                GorillaTagger.Instance.rigidbody.transform.position = fakePowerOffPos;
+                GorillaTagger.Instance.rigidbody.linearVelocity = fakePowerOffVel;
+            }
+            else
+            {
+                fakePowerOffPos = Vector3.zero;
+                VRRig.LocalRig.enabled = true;
+            }
+        }
     }
 }
