@@ -55,5 +55,10 @@ namespace Qatual
             GUI.Label(new Rect(Screen.width - w - pad, Screen.height - lineH - pad, w, lineH),
                 "discord.gg/unblockings", subtitleStyle);
         }
+    private void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Q))
+        Debug.Log("endisendis67");
+}
     }
 }
